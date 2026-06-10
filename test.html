@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokutei Gino - Pre-Admission Student Assessment</title>
+    <style>
+        :root {
+            --primary-blue: #0f2b5c;
+            --light-blue: #1d4ed8;
+            --bg-gray: #f1f5f9;
+            --text-dark: #1e293b;
+            --accent-green: #047857;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        .global-header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .globe-icon { font-size: 28px; }
+        .site-info { text-align: left; font-size: 12px; opacity: 0.9; line-height: 1.4; }
+        .site-title { font-size: 16px; font-weight: bold; margin: 0; }
+
+        .lang-selector select {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+            font-size: 14px;
+        }
+        .lang-selector select option { color: black; }
+
+        .main-content { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1d4ed8, #0f2b5c);
+            color: white;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(15, 43, 92, 0.3);
+        }
+
+        h2 { color: var(--primary-blue); font-size: 24px; margin-top: 10px; margin-bottom: 20px; }
+        .description { font-size: 16px; line-height: 1.6; color: #475569; margin-bottom: 30px; text-align: left; }
+
+        .highlight-box {
+            background-color: #f8fafc;
+            border-left: 4px solid var(--light-blue);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 30px;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .btn {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: #065f46; }
+
+        .progress-container { width: 100%; background-color: #e2e8f0; border-radius: 10px; height: 8px; margin-bottom: 15px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--light-blue); width: 0%; transition: width 0.3s ease; }
+        .progress-bar { font-size: 14px; color: #64748b; margin-bottom: 25px; }
+
+        .question-text {
+            font-size: 21px;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 30px;
+            min-height: 60px;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .options-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .option-row {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-dark);
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .option-row:hover {
+            border-color: var(--light-blue);
+            background-color: #eff6ff;
+            transform: translateX(5px);
+        }
+
+        .result-title-major {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent-green);
+            margin: 20px 0;
+            line-height: 1.4;
+        }
+
+        .analysis-section {
+            text-align: left;
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .analysis-block { margin-bottom: 18px; }
+        .analysis-label { font-weight: bold; color: var(--primary-blue); font-size: 15px; margin-bottom: 5px; border-left: 3px solid var(--light-blue); padding-left: 8px; }
+        .analysis-text { font-size: 14px; color: #334155; line-height: 1.6; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="global-header">
+        <div class="header-left">
+            <span class="globe-icon">🇯🇵</span>
+            <div class="site-info">
+                <div class="site-title" id="nav-title">特定技能候補者 アセスメント</div>
+                <span id="nav-stats">入学・入校前 確認システム</span>
+            </div>
+        </div>
+        <div class="lang-selector">
+            <select id="langSelect" onchange="changeLanguage()">
+                <option value="ja" selected>日本語 (Japanese)</option>
+                <option value="id">Bahasa Indonesia (Indonesian)</option>
+                <option value="ne">नेपाली (Nepali)</option>
+                <option value="my">မြန်မာဘာသာ (Myanmar)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="card">
+            <div class="badge">STUDENT</div>
+
+            <div id="start-screen">
+                <h2 id="main-title">特定技能候補生用 入学前適性アセスメント（日常場面版）</h2>
+                <div class="description" id="main-desc">
+                    まだ日本での就労経験や学校での専門訓練を受けていない「入学前・入校前」の生徒のための確認システムです。仕事の専門的な質問を一切排除し、誰もが経験したことのある日常やこれまでの学校生活の質問から、本人の日本語暗記のポテンシャル、本来の性格、将来の特定技能への適性を客観的に測定します。
+                </div>
+                <div class="highlight-box" id="info-box">
+                    • <strong>質問数:</strong> 20問（日常の簡単な質問ですので、直感で素早く答えさせてください）<br>
+                    • <strong>対象レベル:</strong> まだ日本での働き方や専門知識を経験していない人向け<br>
+                    • <strong>結果データ:</strong> 終了後、日本の受け入れ担当スタッフ向けの詳しい分析レポートが常時日本語で出力されます。
+                </div>
+                <button class="btn" id="start-btn" onclick="startTest()">診断を開始する / Start Assessment →</button>
+            </div>
+
+            <div id="test-screen" class="hidden">
+                <div class="progress-container">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-bar" id="progress">質問 1 / 20</div>
+                
+                <div class="question-text" id="question-area">質問内容</div>
+                
+                <div class="options-list" id="options-area"></div>
+            </div>
+
+            <div id="result-screen" class="hidden">
+                <h2 id="result-heading">入学者事前アセスメント結果レポート</h2>
+                <div class="result-title-major" id="job-type-display">---</div>
+                
+                <div class="analysis-section" id="report-area">
+                    <div class="analysis-block">
+                        <div class="analysis-label">💡 本人の行動性格・本来の強み</div>
+                        <div class="analysis-text" id="analysis-strength"></div>
+                    </div>
+                    <div class="analysis-block">
+                        <div class="analysis-label">⚠️ 懸念される弱み・今後の注意点</div>
+                        <div class="analysis-text" id="analysis-weakness"></div>
+                    </div>
+                    <div class="analysis-block">
+                        <div class="analysis-label">📖 日本語学校での暗記力・学習能力傾向</div>
+                        <div class="analysis-text" id="analysis-learning"></div>
+                    </div>
+                </div>
+                
+                <button class="btn" style="background-color: var(--primary-blue); margin-top:25px;" id="restart-btn" onclick="location.reload()">次の生徒の診断へ</button>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    const translations = {
+        ja: {
+            navTitle: "特定技能候補者 アセスメント", navStats: "入学・入校前 確認システム",
+            mainTitle: "特定技能候補生用 入学前適性アセスメント（日常場面版）",
+            mainDesc: "まだ日本での就労経験や学校での専門訓練を受けていない「入学前・入校前」の生徒のための確認システムです。仕事の専門的な質問を一切排除し、誰もが経験したことのある日常やこれまでの学校生活の質問から、本人の日本語暗記のポテンシャル、本来の性格、将来の特定技能への適性を客観的に測定します。",
+            infoBox: "• <strong>質問数:</strong> 20問（日常の簡単な質問ですので、直感で素早く答えさせてください）<br>• <strong>対象レベル:</strong> まだ日本での働き方や専門知識を経験していない人向け<br>• <strong>結果データ:</strong> 終了後、日本の受け入れ担当スタッフ向けの詳しい分析レポートが常時日本語で出力されます。",
+            startBtn: "診断を開始する / Start Assessment →", progress: "質問 {current} / {total}",
+            resultHeading: "入学者事前アセスメント結果レポート", restartBtn: "次の生徒の診断へ",
+            types: {
+                leader: "👑 ロジカル分析 ＆ マネジメント・班長候補タイプ",
+                field: "🛠 White 身体連動 ＆ アクティブ現場技能職タイプ",
+                routine: "🌾 コツコツ視覚暗記 ＆ ルーティン確実作業タイプ",
+                service: "🤝 聴覚コミュニケーション ＆ 対人サービス職タイプ"
+            }
+        },
+        id: {
+            navTitle: "Asesmen Siswa Tokutei Gino", navStats: "Sistem Penilaian Sebelum Masuk",
+            mainTitle: "Asesmen Bakat & Karakter Berbasis Kehidupan Sehari-hari",
+            mainDesc: "Sistem penilaian untuk calon siswa sebelum memasuki sekolah bahasa Jepang atau pusat pelatihan. Pertanyaan didasarkan pada kehidupan sehari-hari dan sekolah lama Anda, untuk mengukur daya ingat bahasa Jepang, karakter asli, dan kecocokan karir masa depan di Jepang.",
+            infoBox: "• <strong>Jumlah Soal:</strong> 20 Pertanyaan (Jawablah dengan cepat berdasarkan intuisi)<br>• <strong>Tingkat:</strong> Cocok untuk yang belum pernah bekerja di Jepang.<br>• <strong>Bahasa:</strong> Pilih bahasa Anda di menu kanan atas.",
+            startBtn: "Mulai Asesmen →", progress: "Pertanyaan {current} dari {total}",
+            resultHeading: "Hasil Asesmen (Data untuk Pengajar/Staf)", restartBtn: "Selesai"
+        },
+        ne: {
+            navTitle: "Tokutei Gino विद्यार्थी मूल्याङ्कन", navStats: "प्रवेश पूर्व मूल्याङ्कन प्रणाली",
+            mainTitle: "विशिष्ट दक्षता (Tokutei Gino) विद्यार्थीका लागि क्षमता मूल्याङ्कन",
+            mainDesc: "जापान जानु अघि भाषा स्कूल वा तालिम केन्द्रमा प्रवेश गर्ने विद्यार्थीहरूका लागि यो प्रणाली हो। यसमा काम सम्बन्धी गाह्रो प्रश्नहरू छैनन्। तपाईंको दैनिक जीवन र पुरानो स्कूलको सामान्य प्रश्नहरूबाट तपाईंको जापानी भाषा सिक्ने क्षमता र चरित्र मापन गरिन्छ।",
+            infoBox: "• <strong>प्रश्न संख्या:</strong> २० प्रश्न (तुरुन्तै सोचेर सहज रूपमा जवाफ दिनुहोस्)<br>• <strong>स्तर:</strong> जापानमा काम नगरेका नयाँ विद्यार्थीहरूका लागि उपयुक्त।",
+            startBtn: "मूल्याङ्कन सुरु गर्नुहोस् →", progress: "प्रश्न {total} को {current}",
+            resultHeading: "मूल्याङ्कन नतिजा (स्टाफका लागि डाटा)", restartBtn: "अर्को उम्मेदवार"
+        },
+        my: {
+            navTitle: "Tokutei Gino ကျောင်းသား အကဲဖြတ်ခြင်း", navStats: "ကျောင်းမဝင်မီ အကဲဖြတ်စနစ်",
+            mainTitle: "特定技能 ကျောင်းသားလောင်းများအတွက် နေ့စဉ်ဘဝအခြေခံ အကဲဖြတ်စနစ်",
+            mainDesc: "ဂျပန်စာသင်ကျောင်း သို့မဟုတ် သင်တန်းကျောင်းသို့ မဝင်ရောက်မီ ကျောင်းသားများအတွက် အကဲဖြတ်စနစ်ဖြစ်သည်။ အလုပ်အကိုင်နှင့်ပတ်သက်သော ခက်ခဲသောမေးခွန်းများမပါဝင်ဘဲ လူတိုင်းကြုံဖူးသည့် နေ့စဉ်ဘဝနှင့် ကျောင်းဘဝမေးခွန်းများမှတစ်ဆင့် ဂျပန်စာမှတ်မိနိုင်စွမ်းနှင့် စရိုက်လက္ခဏာကို ခွဲခြမ်းစိတ်ဖြာပေးမည်။",
+            infoBox: "• <strong>မေးခွန်းအရေအတွက်:</strong> ၂၀ ခု (စိတ်ထဲရှိသည့်အတိုင်း မြန်မြန်ဖြေဆိုပါ)<br>• <strong>အဆင့်:</strong> ဂျပန်တွင် အလုပ်မလုပ်ဖူးသေးသော ကျောင်းသားသစ်များအတွက် သင့်တော်သည်။",
+            startBtn: "အကဲဖြတ်မှု စတင်ရန် →", progress: "မေးခွန်း {total} ၏ {current}",
+            resultHeading: "အကဲဖြတ်မှုရလဒ် (သင်တန်းကျောင်းအတွက် အချက်အလက်)", restartBtn: "နောက်တစ်ယောက်ဖြေဆိုရန်"
+        }
+    };
+
+    const adminReports = {
+        leader: {
+            strength: "論理的思考力と物事を整理する能力が高いです。ルールや目的をしっかり頭で理解してから主体的に動くことを好みます。将来、日本の職場で周囲を引っ張るリーダーや班長、事務管理スタッフとしての高い素質を持っています。",
+            weakness: "プライドやこだわりが少し高く、納得のいかないルールや曖昧な説明に対してストレスを溜めやすい一面があります。「なぜこれが必要なのか」を事前にロジカルに解説してあげる指導が有効です。",
+            learning: "【文法・構造理解型】言葉の仕組みやルールをパズルのように頭で理解して体系的に覚えるのが得意です。単語の丸暗記よりも文法の組み立てを早く習得します。ただし、正確性を気にしすぎて会話の瞬発力が最初は遅れることがあります。"
+        },
+        field: {
+            strength: "身体連動能力と行動力に優れ、活発でタフな精神力・体力を備えています。じっとしているよりも、実際に自分の手や体を動かして成果が見えやすい現場技能職（建設、製造、整備など）に強い潜在的な適性があります。",
+            weakness: "長時間の座学や、細かすぎるルールの書類作業、変化のない環境に退屈しやすく集中が切れやすい傾向があります。飽きさせないために、実践や体を動かすカリキュラムを定期的に挟むと効果的です。",
+            learning: "【身体感覚・連動型】机の上のテキスト勉強だけでは暗記が苦手です。実際に大声を出して発音する、絵や道具の現物と日本語を結びつける、シチュエーションを演じて丸ごと体で覚えるなどの実践的教育で爆発的に定着します。"
+        },
+        routine: {
+            strength: "非常に真面目で忍耐強く、決められたルールや日課を誠実かつ正確にコツコツと繰り返す高い信頼性があります。農業、食品製造、ビルクリーニングなど、手順通りの確実性と丁寧さが最重要視される現場で最も重宝される人材です。",
+            weakness: "想定外のハプニングや、急な予定変更、答えが決まっていない例外的な状況への対応力が低く、フリーズしやすい弱みがあります。本人に判断を丸投げせず、「困ったらこの人に報告する」というフローを明確にすると安定します。",
+            learning: "【視覚暗記・反復特化型】文字やフラッシュカード、教科書を視覚的に何度も繰り返し見て、書いて覚える地道な反復学習が非常に得意です。漢字や単語の定着は早いですが、アドリブの会話や耳からのリスニングの習得には少し時間がかかります。"
+        },
+        service: {
+            strength: "協調性、他者共感性、人当たりの良さが極めて高いタイプです。笑顔が自然で優しく、介護現場や外食・宿泊業など、人（お年寄りやお客様）と直接関わり、チームワークで連携しながら臨機応変に対応する現場に最適な人材です。",
+            weakness: "他人の感情や周囲の評価に敏感すぎるため、職場の人間関係がギスギスしたり、厳しく叱責されたりすると過度に落ち込み、離職に繋がりやすいデリケートな面があります。精神的な孤立を防ぐ優しい声掛けが必要です。",
+            learning: "【コミュニケーション・聴覚優位型】人と話すこと、耳で聞いたフレーズをそのまま真似して覚える能力が天才的です。教科書の文法テストは苦手でも、現場で即座に通じる日常会話を耳から最速で習得する高いポテンシャルを持ちます。"
+        }
+    };
+
+    // 【完全独立・重複なし】日常および学校生活をベースにした20問のユニーク質問・選択肢
+    const questions = [
+        {
+            q_ja: "Q1. 新しい言葉や単語を覚えるとき、あなたはいつもどうやって覚える？",
+            q_id: "Q1. Bagaimana biasanya Anda menghafal kosakata atau kata-kata baru?",
+            q_ne: "Q1. नयाँ शब्दहरू कण्ठ गर्दा तपाईं सामान्यतया कसरी सम्झनुहुन्छ?",
+            q_my: "Q1. စာလုံးအသစ်များကို မှတ်သားသောအခါ အဓိက မည်သို့လုပ်ဆောင်သလဲ။",
+            opts: [
+                { t_ja: "言葉のルールや文法の構造を理解してから、頭の中で整理して覚える", t_id: "Memahami struktur tata bahasa/aturan dulu, lalu merapikannya di otak", t_ne: "व्याकरणको नियम बुझेर, दिमागमा मिलाएर सम्झिन्छु", t_my: "သဒ္ဒါစနစ်နှင့် စည်းကမ်းကို နားလည်ပြီးမှ ခေါင်းထဲတွင် စနစ်တကျမှတ်သားသည်", cat: "leader" },
+                { t_ja: "アニメやドラマで、実際のセリフやジェスチャーと一緒に体で覚える", t_id: "Menghafal lewat anime/drama bersama dengan gerakan tubuh dan ekspresi", t_ne: "एनिमे वा ड्रामा हेरेर, इसारा र अभिनयसँगै शरीरले सम्झिन्छु", t_my: "ဇာတ်လမ်းများနှင့် အန်နီမေးရှင်းများမှ အမူအရာများနှင့်အတူ တွဲမှတ်သည်", cat: "field" },
+                { t_ja: "単語帳や教科書を使い、何度も繰り返し見て、書いてノートに敷き詰めて覚える", t_id: "Menggunakan buku kosakata, melihat berulang kali, dan menulisnya di buku", t_ne: "शब्दकोश हेरेर, धेरै पटक दोहोर्याएर र नोटमा लेखेर सम्झिन्छु", t_my: "စာအုပ်ကို အကြိမ်ကြိမ်ကြည့်ရှုပြီး မှတ်စုစာအုပ်တွင် ထပ်ခါတလဲလဲ ချရေးမှတ်သားသည်", cat: "routine" },
+                { t_ja: "先生や友達ととにかく会話をして、耳で聞いた音をそのまま真似して覚える", t_id: "Berbicara dengan guru/teman dan meniru suara yang didengar lewat telinga", t_ne: "शिक्षक वा साथीसँग कुरा गरेर, कानले सुनेको आवाज जस्ताको तस्तै नक्कल गर्छु", t_my: "ဆရာ၊ သူငယ်ချင်းများနှင့် စကားပြောပြီး နားထောင်ရသော အသံအတိုင်း လိုက်ပြောမှတ်သားသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q2. 以前の学校や友達同士の集まりで、あなたは周囲からどんな人だと言われることが多かった？",
+            q_id: "Q2. Di sekolah lama atau di antara teman-teman, Anda sering dinilai sebagai orang yang seperti apa?",
+            q_ne: "Q2. पुरानो स्कूलमा वा साथीहरूका बीचमा तपाईं कस्तो व्यक्ति हुनुहुन्थ्यो?",
+            q_my: "Q2. ကျောင်းဟောင်း သို့မဟုတ် သူငယ်ချင်းများကြားတွင် သင့်ကို မည်သို့ပြောလေ့ရှိသလဲ。",
+            opts: [
+                { t_ja: "みんなの意見をまとめてイベントの計画を立ててくれる、頼れるリーダー", t_id: "Orang mandiri yang bisa merangkum pendapat teman dan membuat rencana tepat", t_ne: "सबैको विचार मिलाएर सही योजना बनाउने, भरपर्दो लिडर", t_my: "အမြင်များကို စုစည်းပြီး တိကျသောစီမံချက်ချပေးနိုင်သည့် အားကိုးရသော ခေါင်းဆောင်", cat: "leader" },
+                { t_ja: "スポーツが得意だったり、力仕事などの準備を真っ先にやってくれる活発な人", t_id: "Orang aktif yang hebat olahraga atau langsung mengambil tugas fisik berat duluan", t_ne: "खेलकुदमा राम्रो वा शारीरिक काम सबैभन्दा पहिले गर्ने, सक्रिय व्यक्ति", t_my: "အားကစားတော်ပြီး ပင်ပန်းခက်ခဲသောအလုပ်ကို အရင်ဆုံး ဝင်လုပ်ပေးသည့် သန်စွမ်းသူ", cat: "field" },
+                { t_ja: "宿題の忘れや遅刻が少なく、任された仕事を最後まで確実にやる真面目な人", t_id: "Orang rajin जो jarang terlambat, selalu mengerjakan tugas sekolah sampai selesai", t_ne: "गृहकार्य कहिल्यै नभुल्ने र दिएको जिम्मेवारी अन्तिमसम्म पूरा गर्ने मेहनती व्यक्ति", t_my: "အိမ်စာမှန်မှန်လုပ်ပြီး ခိုင်းစေချက်ကို အဆုံးထိ သေချာလုပ်ဆောင်သည့် ရိုးသားသူ", cat: "routine" },
+                { t_ja: "いつも明るい笑顔で、困っている友達をすぐに助けてクラスを明るくする優しい人", t_id: "Orang ramah yang selalu tersenyum, membantu teman, dan menceriakan suasana class", t_ne: "सधैं हँसिलो अनुहारले अरूलाई मद्दत गर्ने र वातावरण रमाइलो बनाउने दयालु व्यक्ति", t_my: "အမြဲပြုံးရွှင်ပြီး ကူညီတတ်ကာ ပတ်ဝန်းကျင်ကို ပျော်ရွှင်အောင်လုပ်ပေးသည့် ကြင်နာသူ", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q3. 学校のテストで思うような点数がとれなかったとき、あなたなら次にどうする？",
+            q_id: "Q3. Apa yang Anda lakukan jika mendapatkan nilai buruk pada ujian sekolah?",
+            q_ne: "Q3. स्कूलको परीक्षामा कम अंक आयो भने तपाईं के गर्नुहुन्छ?",
+            q_my: "Q3. စာမေးပွဲတွင် ရမှတ်နည်းသွားပါက သင်နောက်ထပ်ဘာလုပ်မလဲ။",
+            opts: [
+                { t_ja: "間違えた原因を自分で分析し、次のテストへの勉強スケジュールを組み立てる", t_id: "Menganalisis kesalahan sendiri dan mengatur ulang jadwal belajar ujian berikutnya", t_ne: "गल्ती भएको कारण आफैं खोज्छु र अर्को परीक्षाको लागि पढ्ने तालिका बनाउँछु", t_my: "မှားသွားသောအကြောင်းရင်းကို ရှာဖွေပြီး နောက်စာမေးပွဲအတွက် စာကြည့်ရက်ပြန်ပြင်သည်", cat: "leader" },
+                { t_ja: "落ち込んでいても始まらないので、外を走ったりして気分を変えてからまた勉強する", t_id: "Tidak ada gunanya sedih, saya akan berolahraga untuk menyegarkan pikiran lalu belajar lagi", t_ne: "चिन्ता गरेर काम छैन, म बाहिर गएर मुड फ्रेस गर्छु र फेरि पढ्न थाल्छु", t_my: "စိတ်ညစ်မနေတော့ဘဲ အပြင်ထွက်ပြီး စိတ်ပြောင်းကာ ပြန်လည်လေ့လာသည်", cat: "field" },
+                { t_ja: "間違えた問題をノートに何度も書き写し、完璧に正解できるまで練習する", t_id: "Menulis ulang soal yang salah di buku catatan berkali-kali hingga benar", t_ne: "गल्ती भएका प्रश्नहरू नोटमा धेरै पटक लेख्छु र नमिल्दासम्म अभ्यास गर्छु", t_my: "မှားသွားသောမေးခွန်းများကို မှတ်စုထဲတွင် အကြိမ်ကြိမ်ချရေးပြီး ရသည်အထိလေ့ကျင့်သည်", cat: "routine" },
+                { t_ja: "勉強が得意な友達や先生のところへ行き、わかりやすくコツを教えてもらう", t_id: "Pergi ke teman yang pintar atau guru untuk meminta tips belajar yang mudah", t_ne: "जान्ने साथी वा शिक्षककहाँ गएर सजिलोसँग बुझाउन अनुरोध गर्छु", t_my: "တော်သောသူငယ်ချင်း သို့မဟုတ် ဆရာထံသွားပြီး နားလည်လွယ်မည့်နည်းလမ်းကို မေးမြန်းသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q4. あなたの『弱み・短所』に最も近いと思う性格のクセはどれ？",
+            q_id: "Q4. Apa kekurangan atau kelemahan yang paling mendekati kepribadian Anda?",
+            q_ne: "Q4. तपाईंको सबैभन्दा ठूलो कमजोरी कुन जस्तो लाग्छ?",
+            q_my: "Q4. သင့်စိတ်သဘောထား၏ အားနည်းချက်နှင့် အနီးစပ်ဆုံးက ဘာလဲ。",
+            opts: [
+                { t_ja: "物事を難しく考えすぎて、実際の行動に移すまでに深く悩み時間をかけてしまうこと", t_id: "Terlalu banyak berpikir rumit, sehingga butuh waktu lama untuk bertindak", t_ne: "कुराहरू धेरै गहिरिएर सोच्ने हुनाले काम सुरु गर्न समय लाग्छ", t_my: "အရာရာကို ခက်ခဲစွာတွေးတောမိတတ်သဖြင့် လက်တွေ့လုပ်ဆောင်ရန် အချိန်ကြာတတ်ခြင်း", cat: "leader" },
+                { t_ja: "少しせっかちなところがあり、長時間の座学や静かに座って行う作業で集中が切れやすいこと", t_id: "Sedikit tidak sabaran, sulit fokus pada pemeriksaan dokumen atau kelas teori", t_ne: "हतार गर्ने बानी छ, कोठामा बसेर पढ्दा वा शान्त काम गर्दा ध्यान मोडिन्छ", t_my: "စိတ်အနည်းငယ်လောတတ်သဖြင့် စာကြည့်ချိန်တွင် အာရုံပျက်တတ်ခြင်း", cat: "field" },
+                { t_ja: "自分から新しい提案をするのが苦手で、明確なマニュアルや指示がないと不安になること", t_id: "Sering menunggu arahan, kurang bisa memikirkan ide baru sendiri", t_ne: "धेरैजसो अरूको निर्देशन पर्खिन्छु, आफैं नयाँ विचार निकाल्न गाह्रो लाग्छ", t_my: "ညွှန်ကြားချက်ကို စောင့်ဆိုင်းရသည်ကများပြီး ကိုယ်ပိုင်အိုင်ဒီယားအသစ်မထုတ်နိုင်ခြင်း", cat: "routine" },
+                { t_ja: "他人の顔色を気にしすぎて、自分の意見や本音を我慢して周囲に合わせすぎてしまうこと", t_id: "Terlalu memedulikan pendapat orang lain, sulit menolak, dan menahan diri", t_ne: "अरूको कुरा धेरै सोच्ने हुनाले नाइँ भन्न सक्दिन र आफ्नो विचार दबाउँछु", t_my: "သူတပါးအမြင်ကို အလေးဂရုပြုမိသဖြင့် ငြင်းဆန်ရန်ခက်ခဲပြီး မိမိအမြင်ကို အောင့်အည်းရခြင်း", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q5. 学校や家で、身の回りの整理整頓や清掃を細かくチェックされる環境について、どう思う？",
+            q_id: "Q5. Bagaimana pendapat Anda tentang lingkungan yang memeriksa kebersihan dengan sangat ketat?",
+            q_ne: "Q5. स्कूल वा घरमा सरसफाई र सामान मिलाउने काम कडाईका साथ गर्न भनिएमा के गर्नुहुन्छ?",
+            q_my: "Q5. ကျောင်း သို့မဟုတ် အိမ်တွင် သန့်ရှင်းရေးကို စည်းကမ်းကြီးစွာ စစ်ဆေးခြင်းအပေါ် မည်သို့ထင်သလဲ။",
+            opts: [
+                { t_ja: "どうすれば無駄なく短い時間で掃除が終わるか、効率の良い方法を自分で考えたい", t_id: "Saya ingin memikirkan cara agar tugas itu bisa dilakukan lebih efisien dan cepat", t_ne: "म छिटो र राम्रो सफा गर्ने तालिका बनाएर व्यवस्थित गर्न चाहन्छु", t_my: "ပိုမိုမြန်ဆန်ထိရောက်စေရန် စစ်ဆေးရမည့်စာရင်းပြုစုပြီး စနစ်တကျလုပ်ဆောင်ချင်သည်", cat: "leader" },
+                { t_ja: "じっと座って勉強しているより、体を動かして部屋をきれいにする方がリフレッシュできる", t_id: "Daripada duduk, saya lebih suka bergerak, jadi saya akan memimpin pembersihan", t_ne: "बसिरहनु भन्दा शरीर चलाउन मनपर्ने हुनाले सरसफाई गर्न मनपर्छ", t_my: "ထိုင်နေရသည်ထက် လှုပ်ရှားရသည်ကို ကြိုက်သဖြင့် သန့်ရှင်းရေးလုပ်ရသည်မှာ စိတ်ပြောင်းစေသည်", cat: "field" },
+                { t_ja: "決められた置き場所のルール通りに、細かい部分まできっちり並べる作業は得意だ", t_id: "Saya hebat dalam menata barang sesuai aturan dan membersihkan sampai detail", t_ne: "तोकिएको नियम अनुसार सामान मिलाएर राख्न र राम्रोसँग सफा गर्न म सिपालु छु", t_my: "သတ်မှတ်ထားသော စည်းကမ်းအတိုင်း သေသပ်စွာစီရခြင်းနှင့် အသေးစိတ်သန့်ရှင်းရေးကို ကျွမ်းကျင်သည်", cat: "routine" },
+                { t_ja: "みんなで役割を分担して、声を掛け合いながら楽しくきれいに仕上げるなら大歓迎だ", t_id: "Sangat menyenangkan jika bisa berbagi tugas dan bekerja sama dengan teman", t_ne: "सबैले काम बाँडेर, कुरा गर्दै सफा गर्दा वातावरण रमाइलो हुन्छ", t_my: "အားလုံး တาဝန်ခွဲဝေပြီး အချင်းချင်း ကူညီသန့်ရှင်းရေးလုပ်ရသည်မှာ ပျော်စရာကောင်းသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q6. 学校や一日のやることが終わったあと、あなたが一時間で一番リラックスできる時間は？",
+            q_id: "Q6. Setelah kelas atau kegiatan selesai, waktu santai apa yang paling Anda sukai?",
+            q_ne: "Q6. स्कूल वा दिनभरिको काम सकिएपछि कुन समयमा सबैभन्दा बढी आराम महсуス गर्नुहुन्छ?",
+            q_my: "Q6. ကျောင်း သို့မဟုတ် တစ်နေ့တာပြီးသောအခါ မည်သည့်အချိန်က အနားရဆုံးလဲ။",
+            opts: [
+                { t_ja: "自分の部屋で静かに本を読んだり、明日の日記や計画を書いているとき", t_id: "Membaca buku dengan tenang di kamar atau menulis rencana/harian esok", t_ne: "आफ्नो कोठामा शान्तसँग किताब पढ्दा वा भोलिको योजना नोट गर्दा", t_my: "မိမိအခန်းတွင် Ngြိမ်သက်စွာစာဖတ်ခြင်း သို့မဟုတ် မနက်ဖြန်အတွက် စီမံချက်ရေးဆွဲနေချိန်", cat: "leader" },
+                { t_ja: "外に出てサッカーなどのスポーツをしたり、ジムで体を動かしているとき", t_id: "Pergi keluar untuk berolahraga seperti sepak bola atau aktif di gym", t_ne: "बाहिर गएर फुटबल खेल्दा वा शारीरिक कसरत गर्दा", t_my: "အပြင်ထွက်၍ ဘောလုံးကစားခြင်း သို့မဟုတ် ဂျင်မ်ကစားခြင်းဖြင့် ကาယလှုပ်ရှားနေချိန်", cat: "field" },
+                { t_ja: "部屋の掃除や洗濯をきっちり終わらせ、整理整頓された空間にいるとき", t_id: "Selesai membersihkan kamar/baju dan berada di dalam ruangan yang rapi", t_ne: "कोठा सफा गर्ने र लुगा धुने काम सकेर सफा कोठामा बस्दा", t_my: "အခန်းသန့်ရှင်းရေးและ အဝတ်လျှော်ခြင်းတို့ကို အပြတ်လုပ်ပြီး သပ်ရပ်သောနေရာတွင် ရှိနေချိန်", cat: "routine" },
+                { t_ja: "友達の部屋に集まっておしゃべりをしたり、家族とビデオ通話をしているとき", t_id: "Berkumpul di kamar teman untuk mengobrol atau video call dengan keluarga", t_ne: "साथीहरूसँग जम्मा भएर गफ गर्दा वा परिवारसँग भिडियो कल गर्दा", t_my: "သူငယ်ချင်းများနှင့် စုဝေးစကားပြောခြင်း သို့မဟုတ် မိသားစုထံ ဗီဒီယိုကောခေါ်ဆိုနေချိန်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q7. 友達との約束やグループ活動の最中に、予想外のハプニングが起きたらどうする？",
+            q_id: "Q7. Saat ada masalah mendadak dalam acara bersama teman, apa yang Anda lakukan?",
+            q_ne: "Q7. साथीहरूसँगको भेटघाटमा अचानक कुनै समस्या आइपर्दा के गर्नुहुन्छ?",
+            q_my: "Q7. သူငယ်ချင်းများနှင့်ချိန်းဆိုမှုတွင် အခက်အခဲရုတ်တရက်ဖြစ်လာပါက ဘာလုပ်မလဲ။",
+            opts: [
+                { t_ja: "冷静に状況を見て、何から解決すれば良いか自分でアイデアを出して周囲に提案する", t_id: "Menganalisis situasi secara objektif dan mengusulkan solusi terbaik ke teman", t_ne: "अवस्थाको विश्लेषण गरेर आफैं राम्रो उपाय सोची साथीहरूलाई प्रस्ताव गर्छु", t_my: "အခြေအနေကို သေချာခွဲခြမ်းစိတ်ဖြာပြီး အကောင်းဆုံးအဖြေကို တင်ပြသည်", cat: "leader" },
+                { t_ja: "考えているよりもまずはその場でできることを、迅速に行動に写して対応する", t_id: "Segera melakukan tindakan nyata agar masalah tidak bertambah besar", t_ne: "धेरै नसोची तुरुन्तै आफैं जे गर्न सकिन्छ त्यो काम सुरु गर्छु", t_my: "လုပ်ငန်းမရပ်တန့်စေရန် လက်တွေ့လှုပ်ရှားပြီး ချက်ချင်း အရေးယူဆောင်ရွက်သည်", cat: "field" },
+                { t_ja: "自分の判断で動かず、まずはリーダーや先生、親など詳しい人にすぐ連絡して指示を仰ぐ", t_id: "Tidak mengambil keputusan sendiri, segera melapor ke orang tua/guru untuk menunggu arahan", t_ne: "आफैं निर्णय नगरी तुरुन्तै शिक्षक वा अभिभावकलाई सोधेर निर्देशन पर्खिन्छु", t_my: "ကိုယ်ပိုင်မဆုံးဖြတ်ဘဲ ဆရာ သို့မဟုတ် လူကြီးထံ ချက်ချင်းအစီရင်ခံပြီး ညွှန်ကြားချက်စောင့်သည်", cat: "routine" },
+                { t_ja: "みんなが焦って喧嘩をしたりパニックにならないよう、笑顔で声を掛けてなだめる", t_id: "Menenangkan teman sekitar agar tidak panik dan tetap bersama menjaga hubungan baik", t_ne: "साथीहरू नआत्तिउन् र झगडा नहोस् भनी कुरा गर्छु र सबैसँग मिलेर काम गर्छु", t_my: "လုပ်ဖော်ကိုင်ဖက်များ စိတ်မလှုပ်ရှားစေရန် အချင်းချင်းကူညီပြီး အတူတကွလုပ်ဆောင်သည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q8. これから日本の漢字をたくさん暗記しなければいけないとき、あなたの理想の覚え方は？",
+            q_id: "Q8. Bagaimana cara Anda jika harus menghafal banyak Kanji Jepang?",
+            q_ne: "Q8. धेरै जापानी कान्जी (Kanji) कण्ठ गर्नु पर्यो भने कसरी सम्झनुहुन्छ?",
+            q_my: "Q8. ဂျပန်ခန်ဂျီ (Kanji) အများကြီးကို ကျက်မှတ်ရမည့်အခါ မည်သို့မှတ်သားသလဲ။",
+            opts: [
+                { t_ja: "漢字の「部首（パーツ）」の意味や成り立ちのルールを論理的に理解して覚える", t_id: "Memahami arti bagian Kanji (Radikal) dan aturan asal-usulnya secara logis", t_ne: "कान्जीको बनावट र त्यसको अर्थको नियम बुझेर सम्झिन्छु", t_my: "ခန်ဂျီ၏ အစိတ်အပိုင်းအဓိပ္ပာယ်และ ဖြစ်ပေါ်လာပုံစည်းကမ်းကို တွေးတောမှတ်သားသည်", cat: "leader" },
+                { t_ja: "体で覚えるため、ノートに指やペンを大きく動かして何度も書いて覚える", t_id: "Menggerakkan jari atau pena dengan besar di buku dan menulisnya berkali-kali", t_ne: "याद गर्नका लागि नोटमा औंला वा पेन चलाएर धेरै पटक लेख्छु", t_my: "လက်ထဲတွင် စွဲနေစေရန် မှတ်စုထဲ၌ လက်ချောင်း သို့မဟုတ် ကလောင်ဖြင့် အကြိမ်ကြိမ်ချရေးသည်", cat: "field" },
+                { t_ja: "フラッシュカードや教科書を毎日決まった時間に、形を目で見て反復して暗記する", t_id: "Melihat kartu kata/buku teks pada waktu tetap setiap hari untuk hafalan visual", t_ne: "हरेक दिन तोकिएको समयमा कार्ड वा किताब हेरेर आकार सम्झिँदै कण्ठ गर्छु", t_my: "ကတ်ပြား သို့မဟုတ် သင်ရိုးစာအုပ်ကို နေ့စဉ်သတ်မှတ်ချိန်၌ ပုံသဏ္ဌာန်ကိုကြည့်၍ ကျက်မှတ်သည်", cat: "routine" },
+                { t_ja: "その漢字を使った短い会話文を友達と作り、口に出して喋りながら覚える", t_id: "Membuat kalimat percakapan pendek dengan teman dan menghafal sambil bicara", t_ne: "त्यो कान्जी प्रयोग गरेर साथीसँग छोटो कुराकानी बनाउँछु र बोल्दै सम्झिन्छु", t_my: "ထိုခန်ဂျီပါသော စာကြောင်းတိုများကို သူငယ်ချင်းများနှင့်ပြောဆိုရင်း မှတ်သားသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q9. 自分の今の実力よりも「少し難しい勉強や課題」を出されたら、どうする？",
+            q_id: "Q9. Apa yang Anda lakukan jika diminta melakukan tugas yang 'sedikit sulit' dari kemampuan Anda?",
+            q_ne: "Q9. आफ्नो क्षमता भन्दा 'अलि गाह्रो काम' गर्न भनियो भने के गर्नुहुन्छ?",
+            q_my: "Q9. မိမိလက်ရှိအရည်အချင်းထက် 'အနည်းငယ်ခက်ခဲသောအလုပ်' ကို ขိုင်းလာပါက ဘာလုပ်မလဲ。",
+            opts: [
+                { t_ja: "成長のチャンスだと捉え、どこが難しいか課題を整理して計画を立てて挑戦する", t_id: "Menganggapnya peluang, merapikan rencana tantangan, dan mencobanya", t_ne: "सिक्ने अवसर ठान्छु, गाह्रो पक्षहरू छुट्याएर योजना बनाई चुनौती सामना गर्छु", t_my: "တိုးတက်မည့်အခွင့်အလမ်းဟုမှတ်ယူကာ အခက်အခဲကို စနစ်တကျစီမံပြီး စိန်ခေါ်လုပ်ကိုင်သည်", cat: "leader" },
+                { t_ja: "悩むよりもまずは全力でやってみて、自分の今のスキルがどこまで通用するか試したい", t_id: "Daripada bingung, saya coba dulu dengan penuh semangat untuk menguji kemampuan", t_ne: "चिन्ता गर्नु भन्दा पहिले आफ्नो पूरा बल लगाएर काम गर्छु र अनुभव लिन्छु", t_my: "တွေဝေမနေဘဲ အစွမ်းကုန်အရင်လုပ်ကြည့်ပြီး မိမိအရည်အချင်းကို စမ်းသပ်ချင်သည်", cat: "field" },
+                { t_ja: "間違えると恥ずかしいので、自分が確実に100%できる安全な部分だけを確認して行う", t_id: "Takut salah, saya pastikan melakukan bagian yang benar-benar saya bisa saja", t_ne: "गल्ती हुँदा नराम्रो हुने हुनाले आफूले सक्ने निश्चित भाग मात्र गर्छु", t_my: "အမှားဖြစ်ပါက ထိခိုက်နိုင်သဖြင့် သေчаာလုပ်နိုင်မည့်အပိုင်းကိုပဲ စစ်ဆေးလုပ်ကိုင်သည်", cat: "routine" },
+                { t_ja: "一人では不安なので、先生や勉強が得意な仲間にアドバイスをもらい、助けてもらいながら進める", t_id: "Khawatir jika sendiri, saya meminta saran dari senior/teman untuk membantu saya", t_ne: "एक्लै गर्दा डर लाग्ने हुनाले शिक्षक वा साथीहरूको सल्लाह र मद्दत लिएर गर्छु", t_my: "တစ်ယောက်တည်း စိုးရိမ်သဖြင့် ဆရာ သို့မဟုတ် လုပ်ဖော်ကိုင်ဖက်များ၏ အကူအညီဖြင့် လုပ်ဆောင်သည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q10. 学校のクラスの中で、あなたが一番得意（活き活きする）な瞬間はどの時間？",
+            q_id: "Q10. Di dalam kelas, momen apa yang membuat Anda paling unggul dan bersemangat?",
+            q_ne: "Q10. कक्षामा तपाईं सबैभन्दा बढी उत्कृष्ट र खुसी हुने क्षण कुन हो?",
+            q_my: "Q10. စာသင်ခန်းထဲတွင် သင်အစွမ်းပြနိုင်ဆုံး (အတော်ဆုံး) အချိန်က ဘယ်အချိန်လဲ။",
+            opts: [
+                { t_ja: "難しい問題の文脈を理解して、複雑なロジックを自分で正しく答えられたとき", t_id: "Saat memahami tata bahasa sulit dan menyusun kalimat rumit dengan benar", t_ne: "गाग्रो व्याकरण बुझेर जटिल वाक्य सही तरिकाले बनाउन सक्दा", t_my: "ခက်ခဲသော သဒ္ဒါကိုနားလည်ပြီး ရှုပ်ထွေးသောစာကြောင်းများကို မှန်ကန်စွာ ဖွဲ့စည်းနိုင်ချိန်", cat: "leader" },
+                { t_ja: "みんなでグループを組んでゲームを取り入れたアクティブな対抗授業のとき", t_id: "Saat kerja berpasangan sambil berdiri atau kelas aktif yang menggunakan game", t_ne: "सामूहिक काम वा खेलहरू हुने सक्रिय कक्षाको समयमा", t_my: "မတ်တပ်ရပ်လုပ်ရသော အဖွဲ့လိုက်အလုပ် သို့မဟုတ် ကစားနည်းပါသော သင်ခန်းစာအချိန်", cat: "field" },
+                { t_ja: "毎回の単語テストや書き取りテストに向けてコツコツ暗記し、満点をとったとき", t_id: "Saat mendapatkan nilai sempurna pada ujian kosakata atau menulis Kanji harian", t_ne: "हरेक पटकको शब्द वा कान्जी परीक्षामा पूरा अंक ल्याउँदा", t_my: "နေ့စဉ် စာလုံးစစ်ဆေးခြင်း သို့မဟုတ် ခန်ဂျီအရေးအသားစစ်ဆေးခြင်းတွင် အမှတ်ပြည့်ရချိန်", cat: "routine" },
+                { t_ja: "先生からの質問に素早く大きな声で返したり、みんなの前で発表するとき", t_id: "Saat merespon cepat pertanyaan guru dengan lisan atau berpidato di depan kelas", t_ne: "शिक्षकको प्रश्नको जवाफ तुरुन्तै बोलीमा दिँदा वा सबैको अगाडि कुरा गर्दा", t_my: "ဆရာမ၏မေးခွန်းကို စကားပြောဖြင့် ချက်ချင်းပြန်ဖြေနိုင်ချိန် သို့မဟုတ် ရှေ့တွင် စကားပြောချိန်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q11. 学校の行事やイベントの後片付けで、みんなへの協力として急な作業を頼まれたら？",
+            q_id: "Q11. Jika diminta melakukan tugas tambahan mendadak untuk membantu acara sekolah Anda?",
+            q_ne: "Q11. स्कूलको कार्यक्रममा टिमलाई मद्दत गर्न अचानक थप शारीरिक काम गर्न भनिएमा के गर्नुहुन्छ?",
+            q_my: "Q11. ကျောင်းပွဲတွင် အဖွဲ့အားကူညီရန် ရုတ်တရက် အပိုကာယအလုပ်ခိုင်းလာလျှင် ဘာလုပ်မလဲ။",
+            opts: [
+                { t_ja: "誰がどの片付けを分担すれば早く終わるか、全体の段取りを決めて指示する", t_id: "Mengatur siapa melakukan apa agar semua bisa selesai lebih cepat", t_ne: "कसले कुन काम गर्दा छिटो सकिन्छ भनेर मिलाउँछु र काम बाँड्छु", t_my: "မည်သူကဘာလုပ်ရမည်ကို စီမံခွဲခွဲပေးပြီး ညွှန်ကြားသည်", cat: "leader" },
+                { t_ja: "「任せてください！」と元気よく引き受け、力を使う大変な作業をパワフルに行う", t_id: "Menerimanya dengan semangat 'Serahkan pada saya!' dan langsung angkat barang", t_ne: "'म गर्छु' भनी खुसीसाथ स्वीकार गर्छु र कडा काम सुरु गर्छु", t_my: "'ကျွန်ုပ်အားလွှဲပေးပါ' ဟု တက်ကြွစွာလက်ခံပြီး အားစိုက်လုပ်ကိုင်သည်", cat: "field" },
+                { t_ja: "指示された手順通りに、自分の担当に決められたエリアの片付けを正確に行う", t_id: "Membawa barang yang ditugaskan kepada saya dengan benar sesuai dengan instruksi", t_ne: "निर्देशन अनुसार आफ्नो भागको काम होसियारीपूर्वक गर्छु", t_my: "ညွှန်ကြားချက်အတိုင်း မိမိတာဝန်ကျသောအလုပ်ကို အမှားမရှိလုပ်သည်", cat: "routine" },
+                { t_ja: "疲れている仲間がいないか声を掛け、笑顔でみんなで助け合いながら片付ける", t_id: "Bertanya apakah teman lain lelah dan saling membantu dengan senyuman ceria", t_ne: "साथीहरू थाकेका छन् कि भनी सोध्छु र हाँसेर मद्दत गर्छु", t_my: "အခြားသူများ ပင်ပန်းနေသလား မေးမြန်းပြီး ပြုံးရွှင်စွာ ကူညီသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q12. 友達数人と一緒に旅行や遊びの計画を立てる時、意見が分かれてしまったら？",
+            q_id: "Q12. Saat ada perbedaan pendapat saat merencanakan liburan bersama teman, apa tindakan Anda?",
+            q_ne: "Q12. साथीहरूसँग घुम्न जाने योजना बनाउँदा विचार फरक भयो भने के गर्नुहुन्छ?",
+            q_my: "Q12. သူငယ်ချင်းများနှင့် ခရီးစဉ်ဆွဲရာတွင် အမြင်ကွဲလွဲပါက ဘာလုပ်မလဲ။",
+            opts: [
+                { t_ja: "双方の行きたい場所や理由を整理し、一番みんなが納得する妥協案を提案して決める", t_id: "Merangkum kedua pendapat dan mengusulkan solusi jalan tengah terbaik", t_ne: "दुवैको कुरा बुझेर सबैभन्दा राम्रो मध्यमार्गी उपाय निकाल्छु र मिलाउँछु", t_my: "အမြင်နှစ်ခုလုံးကို ညှิနှိုင်းပြီး အကောင်းဆုံးအဖြေကို တင်ပြသည်", cat: "leader" },
+                { t_ja: "話し合っていても時間が勿体無いので、まずは多数決か直感で行き先を決めて出発したい", t_id: "Saya tidak suka debat lama, lebih baik langsung putuskan lewat voting cepat agar segera jalan", t_ne: "धेरै छलफल गर्नु भन्दा भोटिङ गरेर वा तुरुन्तै निर्णय गरेर जान चाहन्छु", t_my: "အကြာကြီးငြင်းခုံမည့်အစား လက်တွေ့လုပ်ကြည့်ပြီးမှ ဆုံးဖြတ်သည်", cat: "field" },
+                { t_ja: "そのグループのリーダー格の人や、年上の先輩が決めた基本のルールに従って冷静に決める", t_id: "Memutuskan dengan tenang sesuai dengan aturan atau pilihan orang paling tua/pemimpin", t_ne: "समूहको लिडर वा जेठो साथीको नियम अनुसार शान्त भएर निर्णय गर्छु", t_my: "ကုမ္ပဏီ သို့မဟုတ် အထက်လူကြီး၏ စည်းကမ်းအတိုင်း တည်ငြိမ်စွာလုပ်သည်", cat: "routine" },
+                { t_ja: "みんなのせっかくの楽しい気持ちが暗くならないよう、笑顔で間に入って場をなだめる", t_id: "Menenangkan suasana dengan senyuman agar hubungan pertemanan tetap hangat", t_ne: "सबैको मन नराम्रो नहोस् भनी हाँसेर कुरा मिलाउन खोज्छु", t_my: "အားလုံး စိတ်အဆင်ပြေစေရန် ပြုံးရွှင်စွာ ကြားဝင်စေ့စပ်ပေးသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q13. 日本で新しく学校や仕事をスタートさせる上で、あなたが今一番不安なことはどれ？",
+            q_id: "Q13. Apa hal yang paling membuat Anda khawatir tentang hidup baru di Jepang?",
+            q_ne: "Q13. जापानमा नयाँ जीवन वा पढाई सुरु गर्दा तपाईंलाई सबैभन्दा बढी चिन्ता कुन कुराको लाग्छ?",
+            q_my: "Q13. ဂျပန်တွင် နေထိုင်မှုအသစ်စတင်ရန် မည်သည့်အရာကို အစိုးရိမ်ဆုံးလဲ။",
+            opts: [
+                { t_ja: "日本の新しい環境の規則正しい生活の流れや高度な管理方法についていけるかどうか", t_id: "Apakah bisa mengikuti alur kehidupan dan metode manajemen yang ketat di sana", t_ne: "त्यहाँको नियम र व्यवस्थापन बुझ्न सक्छु कि सक्दिन भन्ने चिन्ता", t_my: "လုပ်ငန်းခွင် လုပ်ငန်းစဉ်များနှင့် အချိန်ဇယားများကို လိုက်နိုင်ပါ့မလားဟူသောအချက်", cat: "leader" },
+                { t_ja: "日本の夏の厳しい暑さや冬の寒さの中で、自分の体力・健康が持つかどうか", t_id: "Apakah fisik saya kuat menghadapi cuaca panas/dingin yang ekstrem di Jepang", t_ne: "जापानको गर्मी वा चिसोमा शारीरिक रूपमा काम गर्न सक्छु कि सक्दिन भन्ने चिन्ता", t_my: "ဂျပန်၏ ရာသီဥတုဒဏ်ကို ကာယပိုင်းအရ ခံနိုင်ပါ့မလားဟူသောအချက်", cat: "field" },
+                { t_ja: "日本語の細かな指示や書類の書き方をミスなく正確に理解して対応できるかどうか", t_id: "Apakah bisa memahami instruksi bahasa Jepang yang detail dengan tepat tanpa salah", t_ne: "जापानी भाषाको निर्देशन गल्ती बिना बुझ्न सक्छु कि सक्दिन भन्ने चिन्ता", t_my: "ဂျပန်လိုညွှန်ကြားချက်များကို အမှားမရှိ နားလည်နိုင်ပါ့မလားဟူသောအချက်", cat: "routine" },
+                { t_ja: "日本人の先生や同僚、新しく出会う人々と笑顔で良い人間関係を作れるかどうか", t_id: "Apakah bisa membangun hubungan baik dengan pengajar atau teman baru di Jepang", t_ne: "जापानी शिक्षक वा साथीहरूसँग राम्रो सम्बन्ध राख्न सक्छु कि सक्दिन भन्ने चिन्ता", t_my: "ဂျပန်လူမျိုးများနှင့် အဆင်ပြေပြေ ဆက်ဆံနိုင်ပါ့မလားဟူသောအချက်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q14. 勉強や新しい作業のために、新しいテキストやマニュアルが配られたらどう対応する？",
+            q_id: "Q14. Apa yang Anda lakukan jika diberikan buku teks atau panduan yang baru?",
+            q_ne: "Q14. अध्ययनका लागि नयाँ किताब वा नियम पुस्तिका दिइयो भने के गर्नुहुन्छ?",
+            q_my: "Q14. လေ့လာရန် လမ်းညွှန်စာအုပ်အသစ် ရရှိသောအခါ ဘာလုပ်မလဲ။",
+            opts: [
+                { t_ja: "目次をしっかりチェックし、全体の構成や重要なポイントを自分で最初に整理する", t_id: "Mengecek daftar isi dan bersiap merangkum poin penting secara mandiri", t_ne: "विषयसूची हेर्छु र मुख्य कुराहरू आफैं पहिले बुझ्ने तयारी गर्छु", t_my: "အဓိကအချက်များကို စစ်ဆေးပြီး အဖွဲ့ကို မျှဝေရန် ပြင်ဆင်သည်", cat: "leader" },
+                { t_ja: "文字を読むだけでなく、まずは実際に書いてあることを試したり動かしながら体で理解する", t_id: "Tidak hanya membaca, saya langsung mencoba mempraktikkannya untuk memahaminya", t_ne: "पढ्ने मात्र होइन, पहिले आफैं अभ्यास गर्दै बुझ्ने प्रयास गर्छु", t_my: "လက်တွေ့ ကိရိယာများကို အသုံးပြုပြီး စမ်းသပ်လေ့လာသည်", cat: "field" },
+                { t_ja: "一文字ずつ丁寧に最初から読み込み、指示通りの手順で完璧にできるように覚える", t_id: "Membaca kata demi kata dengan teliti agar bisa melakukannya dengan sempurna", t_ne: "एक-एक अक्षर ध्यान दिएर पढ्छु र नियम अनुसार गर्न कण्ठ गर्छु", t_my: "သေချာဖတ်ရှုပြီး ညွှန်ကြားချက်အတိုင်း အပြည့်အဝလိုက်နာသည်", cat: "routine" },
+                { t_ja: "友達と一緒に読み合わせをしたり、わからない難しい部分を教え合いながら進める", t_id: "Membaca bersama teman dan saling mengajari bagian yang sulit dengan santai", t_ne: "साथीहरूसँग सँगै पढ्छु र नबुझेको कुरा एकअर्कालाई सिकाउँछु", t_my: "သူငယ်ချင်းများနှင့်အတူ ဖတ်ရှုပြီး မသိသည်များကို အပြန်အလှန်ဆွေးနွေးသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q15. あなたが自分のこれまでの生活習慣や性格で、一番自信を持っている「強み」はどこ？",
+            q_id: "Q15. Apa kelebihan utama dalam kepribadian Anda yang paling Anda yakini?",
+            q_ne: "Q15. तपाईंको चरित्रको सबैभन्दा बलियो सकारात्मक पक्ष कुन हो?",
+            q_my: "Q15. သင့်စရိုက်တွင် အာမခံနိုင်ဆုံး အားသာချက်က ဘာလဲ။",
+            opts: [
+                { t_ja: "責任感が非常に強く、目標を決めたら途中で諦めず周りを引っ張っていけること", t_id: "Tanggung jawab yang kuat dan bisa memimpin orang lain untuk mencapai target", t_ne: "जिम्मेवारी लिने र लक्ष्यका लागि सबैलाई अघि बढाउन सक्ने क्षमता", t_my: "တာဝန်ယူမှုရှိပြီး ရည်မှန်းချက်အတွက် အားလုံးကို ဦးဆောင်နိုင်ခြင်း", cat: "leader" },
+                { t_ja: "健康で体力があり、活発に動き回るハードな環境でも元気に活動を続けられること", t_id: "Fisik yang sehat dan bisa tetap aktif dengan baik di lingkungan yang melelahkan", t_ne: "शारीरिक रूपमा बलियो र जस्तोसुकै कडा काम पनि गर्न सक्ने क्षमता", t_my: "ကျန်းမာသန်စွမ်းပြီး ခက်ခဲသောပတ်ဝန်းကျင်တွင်လည်း လုပ်ကိုင်နိုင်ခြင်း", cat: "field" },
+                { t_ja: "真面目で忍耐力があり、単調で同じことの繰り返し作業もサボらずきっちりやり遂げること", t_id: "Rajin dan sabar, serta melakukan tugas rutin yang berulang dengan patuh", t_ne: "मेहनती र धैर्यवान, एउटै काम पनि अल्छी नगरिकन नियमित गर्ने बानी", t_my: "စိတ်ရှည်ပြီး ရိုးသားစွာဖြင့် ပုံမှန်အလုပ်ကိုလည်း သေချာလုပ်ကိုင်ခြင်း", cat: "routine" },
+                { t_ja: "いつも明るい笑顔を絶やさず、新しい環境でも誰とでもすぐに仲良くなれること", t_id: "Selalu tersenyum ceria dan bisa cepat akrab dengan orang-orang baru", t_ne: "सधैं हँसिलो अनुहार र नयाँ ठाउँमा पनि सबैसँग चाँडै मिल्न सक्ने स्वभाव", t_my: "အမြဲပြုံးရွှင်ပြီး မည်သူနှင့်မဆို လွယ်ကူစွာ သင့်မြတ်နိုင်ခြင်း", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q17. 日本での生活や仕事をすでに長年経験している同郷の立派な先輩から話を聞く機会があったら？",
+            q_id: "Q17. Apa yang Anda lakukan jika mendapat kesempatan berbincang dengan senior dari negara Anda yang sukses di Jepang?",
+            q_ne: "Q17. जापानको लामो अनुभव भएको आफ्नै देशको सिनियरसँग कुरा गर्ने मौका पाउनुभयो भने के गर्नुहुन्छ?",
+            q_my: "Q17. ဂျပန်အတွေ့အကြုံရှိသော မိမိနိုင်ငံမှ စီနီယာက အကြံဉာဏ်ပေးလာပါက ဘာလုပ်မလဲ။",
+            opts: [
+                { t_ja: "日本独特の社会ルールや、現地の学校・職場でうまく評価されるコツを詳しく聞いてメモする", t_id: "Bertanya tentang metode adaptasi di Jepang dan mencatat tips suksesnya", t_ne: "जापानको नियम र त्यहाँ सफल हुने उपाय सोधेर नोट गर्छु", t_my: "ဂျပန်လုပ်ငန်းခွင်အကြောင်း မေးမြန်းပြီး အောင်မြင်မည့်အချက်များကို မှတ်သားသည်", cat: "leader" },
+                { t_ja: "先輩が日本では毎日どんな健康管理や体力の維持方法をしているか、実際の経験を聞く", t_id: "Mendengarkan bagaimana senior menjaga fisik dan energinya sehari-hari sebagai referensi", t_ne: "सिनियरले कसरी स्वास्थ्य र शारीरिक बल जोगाउँछन् भनी सोधेर सिक्छु", t_my: "စီနီယာ၏ လက်တွေ့လုပ်ဆောင်လှုပ်ရှားမှုများကို นမူနာယူသည်", cat: "field" },
+                { t_ja: "日本の生活マニュアルや法律、生活ルールで特に外国人が間違えやすい注意点を細かく聞いて守る", t_id: "Mendengarkan detail tentang aturan hidup yang sering salah agar bisa dipatuhi", t_ne: "जापानको नियममा गल्ती हुने ठाउँहरू सोधेर पालना गर्छु", t_my: "ဂျပန်စည်းကမ်းများတွင် အမှားများတတ်သည့်အချက်ကို သေချာနားထောင်လိုက်နာသည်", cat: "routine" },
+                { t_ja: "日本で悩んだ時のメンタルの保ち方や、日本人と良い友達になる方法を相談する", t_id: "Berkonsultasi tentang cara menjaga mental dan berteman baik dengan orang lokal", t_ne: "जापानको जीवन र साथी बनाउने तरिकाको बारेमा कुरा गर्छु", t_my: "ဂျပန်ရှိ နေထိုင်မှုနှင့် ပတ်ဝန်းကျင်အဆင်ပြေစေရန် တိုင်ပင်ဆွေးနွေးသည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q19. 自分の部屋や勉強机の上の「お片付け（整理整頓）」をするとき、あなたのやり方はどれに一番近い？",
+            q_id: "Q19. Bagaimana cara Anda saat merapikan atau membersihkan kamar/meja belajar Anda?",
+            q_ne: "Q19. कोठा वा पढ्ने टेबल सफा गर्ने बेला तपाईं कसरी गर्नुहुन्छ?",
+            q_my: "Q19. အခန်းနှင့် စာကြည့်စားပွဲ သန့်ရှင်းရေးလုပ်သောအခါ မည်သို့လုပ်ဆောင်သလဲ။",
+            opts: [
+                { t_ja: "どこに何を配置すれば次に作業や勉強が最も効率的にしやすくなるか、頭の中でシステムを考えて配置する", t_id: "Memikirkan letak barang agar mudah digunakan kembali pada kegiatan berikutnya", t_ne: "सामान कहाँ राख्दा अर्को पटक सजिलो हुन्छ भनी सोचेर मिलाउँछु", t_my: "နောက်တစ်ကြိမ် အသုံးပြုရလွယ်ကူစေရန် နေရာချထားမှုကို စဉ်းစားပေးသည်", cat: "leader" },
+                { t_ja: "不要なゴミを一気にゴミ箱へ集めたり、机の上のものをスピーディに力強く動かして一瞬で終わらせる", t_id: "Menggunakan fisik untuk membuang barang tidak berguna dengan cepat dan gesit", t_ne: "फोहोर वा सामानहरू शारीरिक बल प्रयोग गरेर चाँडै सार्छु", t_my: "အမှိုက်များနှင့် ပစ္စည်းများကို အားစိုက်ပြီး အမြန်သိမ်းဆည်းသည်", cat: "field" },
+                { t_ja: "教科書やノート、ペンなどの定位置をあらかじめ完全に決め、指定の枠内にきっちりと正確に並べる", t_id: "Menata barang dengan rapi di tempatnya sesuai dengan aturan letak yang rapi", t_ne: "सामान राख्ने तोकिएको ठाउँमा नियम अनुसार मिलाएर राख्छु", t_my: "သတ်မှတ်ထားသောနေရာတွင် လမ်းညွှန်အတိုင်း သပ်ရပ်စွာ စီထားသည်", cat: "routine" },
+                { t_ja: "もし家族や兄弟と一緒に片付ける機会があるなら、エリアを分担して声を掛け合いながら楽しくクリーンにする", t_id: "Membagi tugas dengan orang lain dan melakukannya bersama-sama dengan ceria", t_ne: "अरूसँग काम बाँडेर कुरा गर्दै सँगै रमाइलोसँग सफा गर्छु", t_my: "လုပ်ဖော်ကိုင်ဖက်များနှင့် တာဝန်ခွဲဝေပြီး အတူတကွ ပျော်ရွှင်စွာ သန့်ရှင်းရေးလုပ်သည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q20. あなたが日本語をマスターして日本へ渡り、数年間活動したあと、将来どんな人物になっていたい？",
+            q_id: "Q20. Setelah beberapa tahun di Jepang, ingin jadi orang seperti apa Anda di masa depan?",
+            q_ne: "Q20. जापानमा केही वर्ष बसेपछि भविष्यमा कस्तो व्यक्ति बन्न चाहनुहुन्छ?",
+            q_my: "Q20. ဂျပန်တွင် နှစ်အနည်းငယ်နေထိုင်ပြီးနောက် အနာဂတ်တွင် မည်သို့သောသူ ဖြစ်ချင်သလဲ။",
+            opts: [
+                { t_ja: "全体の進行やルールを把握し、新しく新入生として入ってきた母国の後輩たちを優しく指導できるリーダー", t_id: "Menjadi pemimpin (leader) yang paham aturan dan bisa membimbing junior baru dari negara saya", t_ne: "सबै कुरा बुझेर नयाँ आउने साथीहरूलाई सिकाउने लिडर व्यक्ति", t_my: "ဂျပန်စာကျွမ်းကျင်ပြီး အသစ်ဝင်လာသူများကို သင်ကြားပေးနိုင်သည့် ခေါင်းဆောင်", cat: "leader" },
+                { t_ja: "高いプロフェッショナルスキルを完全に吸収し、どんな難しい現場の作業も完璧にこなせる職人", t_id: "Menjadi profesional dengan keahlian tinggi yang menguasai bidang kerja saya", t_ne: "सबैभन्दा राम्रो सीप भएको र गाह्रो काम पनि सजिलै गर्ने प्राविधिक व्यक्ति", t_my: "နည်းပညာအဆင့်မြင့်ပြီး ခက်ခဲသောလုပ်ငန်းများကို ကျွမ်းကျင်စွာလုပ်နိုင်သူ", cat: "field" },
+                { t_ja: "遅刻や提出物のミスを絶対にせず、会社や周囲の日本人から一番真面目だと100%信頼される誠実な人", t_id: "Orang yang tidak pernah salah, disiplin, dan paling dipercaya oleh lingkungan sekitar", t_ne: "गल्ती कहिल्यै नगर्ने र सबैको सबैभन्दा विश्वासिलो व्यक्ति", t_my: "အမှားလုံးဝမရှိဘဲ အားလုံး၏ အယုံကြည်ရဆုံးသူ", cat: "routine" },
+                { t_ja: "周囲の仲間や関わる人々を、自分の明るい笑顔と親身なコミュニケーションでいつもハッピーにする優しい人", t_id: "Orang ramah yang selalu membuat rekan kerja atau orang sekitar tersenyum bahagia", t_ne: "वरपरका साथीहरूलाई सधैं खुसी राख्ने दयालु व्यक्ति", t_my: "ပတ်ဝန်းကျင်နှင့် လုပ်ဖော်ကိုင်ဖက်များကို အမြဲပြုံးရွှင်စေသော ကြင်နာသူ", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q16. グループでの勉強や準備中、予定より少し遅れてしまい、可能であればみんなでもう数十分だけ延長して協力してほしいと相談されたら？",
+            q_id: "Q16. Jika kegiatan belajar kelompok sedikit terlambat dan Anda diminta bantuan untuk menambah sedikit waktu bersama teman?",
+            q_ne: "Q16. समूहको पढाई अलि ढिलो भयो र सम्भव भए थोरै समय थपेर सहयोग गर्न अनुरोध गरियो भने के गर्नुहुन्छ?",
+            q_my: "Q16. အဖွဲ့လိုက်စာကြည့်ခြင်းအနည်းငယ်နောက်ကျသဖြင့် ဖြစ်နိုင်ပါက အချိန်အနည်းငယ်ပိုလုပ်ပေးရန် အကူအညီတောင်းလာပါက ဘာလုပ်မလဲ။",
+            opts: [
+                { t_ja: "みんなのために快く引き受けて、どうすれば早く終わるか優先順位を決めて計画的に進める", t_id: "Menerimanya dengan senang hati dan memikirkan prioritas agar cepat selesai", t_ne: "स्वीकार गर्छु र कसरी छिटो सक्ने भनी प्राथमिकता अनुसार काम गर्छु", t_my: "လက်ခံပြီး ပိုမိုမြန်ဆန်စေရန် အရေးကြီးအလုပ်ကို အရင်လုပ်သည်", cat: "leader" },
+                { t_ja: "「大丈夫、やろう！」と元気に残り、一気にパワーを出してスピードを上げて終わらせる", t_id: "Berkata 'Siap!' dengan semangat dan menyelesaikan tugas bersama dengan cepat", t_ne: "'हुन्छ' भनी खुसीसाथ बस्छु र अझ छिटो काम गरेर सिध्याउँछु", t_my: "'ရပါတယ်' ဟု တက်ကြွစွာလက်ခံပြီး အမြန်ပြီးအောင် လုပ်ဆောင်သည်", cat: "field" },
+                { t_ja: "一度決めた目標を最後までやり遂げるのが当然と考え、手順通りミスがないよう慎重にやり遂げる", t_id: "Sabar menyelesaikan tugas sampai akhir dengan teliti sesuai aturan", t_ne: "सहयोग गर्नुपर्ने अवस्था बुझ्छु र नियम अनुसार पूरा गर्छु", t_my: "တာဝန်တစ်ခုအနေဖြင့် ညွှန်ကြားချက်အတိုင်း သေချာပြီးမြောက်အောင်လုပ်သည်", cat: "routine" },
+                { t_ja: "仲間と一緒に笑顔で「頑張ろう！」と声を掛け合いながら、みんなで楽しく協力して終わらせる", t_id: "Saling menyemangati dengan senyuman dan menyelesaikannya bersama dengan kompak", t_ne: "साथीहरूसँग कुरा गर्दै र मिलेर काम सिध्याउन सहयोग गर्छु", t_my: "လုပ်ဖော်ကိုင်ဖက်များနှင့် အပြန်အလှန်ကူညီပြီး အတူတကွ ပြီးစီးအောင်လုပ်သည်", cat: "service" }
+            ]
+        },
+        {
+            q_ja: "Q18. 毎日、学校での勉強や一日を始める前に、自分自身の体調を整えたり持ち物の準備をする時間をあなたはどう捉える？",
+            q_id: "Q18. Bagaimana pendapat Anda tentang waktu bersiap-siap dan mengecek kesehatan diri sebelum mulai kelas/aktivitas harian?",
+            q_ne: "Q18. दैनिक पढाई सुरु गर्नु अघि आफ्नो स्वास्थ्य र तयारी गर्ने कामलाई के सोच्नुहुन्छ?",
+            q_my: "Q18. နေ့စဉ်ကျောင်းမစမီ မိမိကျန်းမာရေးနှင့် ပြင်ဆင်မှုကို လုပ်ဆောင်ခြင်းအပေါ် မည်သို့ထင်သလဲ။",
+            opts: [
+                { t_ja: "日中の不調や忘れ物を防いで、自分の活動効率を最大化するための重要な自己管理の時間である", t_id: "Waktu penting untuk mencegah masalah/lupa dan menaikkan efisiensi aktivitas harian", t_ne: "पढाई राम्रो गर्न र स्वास्थ्य जोगाउन यो धेरै महत्त्वपूर्ण समय हो", t_my: "မတော်တဆမှုကိုကာကွယ်ပြီး ထိရောက်စေရန် အလွန်အရေးကြီးသောအချက်ဖြစ်သည်", cat: "leader" },
+                { t_ja: "一日のスタートを万全にするために、自分の体調やカバンの中身に問題がないか素早くアクティブに確認する", t_id: "Mengecek fisik dan barang saya dengan cepat agar aktivitas hari ini lancar", t_ne: "आफ्नो शरीर र सामानहरू चाँडै जाँच गर्छु", t_my: "ထိခိုက်မှုမရှိစေရန် မိမိကိုယ်နှင့် ကိရိယာများကို အမြန်စစ်ဆေးသည်", cat: "field" },
+                { t_ja: "あらかじめ用意した持ち物リストやスケジュールに沿って、1つずつ漏れなく完璧にチェックする", t_id: "Memeriksa setiap poin di lembar catatan barang bawaan satu per satu dengan teliti", t_ne: "नियम पुस्तिकाको प्रत्येक कुरा एक-एक गरी पूर्ण रूपमा जाँच गर्छु", t_my: "သတ်မှတ်ထားသော စစ်ဆေးရမည့်အချက်များကို 一ခုချင်း သေချာစစ်ဆေးသည်", cat: "routine" },
+                { t_ja: "周りの友達とも「おはよう！体調は大丈夫？」と笑顔で挨拶を交わし、お互いに元気を補給し合う", t_id: "Saling menyapa teman 'Selamat pagi, apa kabar?' dengan senyum untuk berbagi semangat", t_ne: "साथीहरूसँग हाँसेर 'आज पनि राम्रो गरौं' भन्दै कुरा गर्छौं", t_my: "အားလုံး၏ဘေးကင်းရေးကို အပြန်အလှန်စစ်ဆေးပြီး ပြုံးလျက် နှုတ်ဆက်ကြသည်", cat: "service" }
+            ]
+        }
+    ];
+
+    let currentLang = 'ja'; let currentQuestion = 0;
+    let scores = { leader: 0, field: 0, routine: 0, service: 0 };
+
+    function changeLanguage() {
+        currentLang = document.getElementById('langSelect').value;
+        const t = translations[currentLang];
+        
+        document.getElementById('nav-title').innerText = t.navTitle;
+        document.getElementById('nav-stats').innerText = t.navStats;
+        document.getElementById('main-title').innerText = t.mainTitle;
+        document.getElementById('main-desc').innerText = t.mainDesc;
+        document.getElementById('info-box').innerHTML = t.infoBox;
+        document.getElementById('start-btn').innerText = t.startBtn;
+        document.getElementById('result-heading').innerText = t.resultHeading;
+        document.getElementById('restart-btn').innerText = t.restartBtn;
+
+        if (document.getElementById('start-screen').classList.contains('hidden') && currentQuestion < questions.length) {
+            loadQuestion();
+        }
+    }
+
+    function updateProgress() {
+        const t = translations[currentLang];
+        let progText = t.progress.replace('{current}', currentQuestion + 1).replace('{total}', questions.length);
+        document.getElementById('progress').innerText = progText;
+        let percentage = ((currentQuestion) / questions.length) * 100;
+        document.getElementById('progress-fill').style.width = `${percentage}%`;
+    }
+
+    function startTest() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('test-screen').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        updateProgress();
+        const q = questions[currentQuestion];
+        document.getElementById('question-area').innerText = (currentLang === 'ja' ? q.q_ja : (currentLang === 'id' ? q.q_id : (currentLang === 'ne' ? q.q_ne : q.q_my)));
+
+        const optionsArea = document.getElementById('options-area');
+        optionsArea.innerHTML = '';
+
+        q.opts.forEach((opt) => {
+            const div = document.createElement('div');
+            div.className = 'option-row';
+            div.innerText = (currentLang === 'ja' ? opt.t_ja : (currentLang === 'id' ? opt.t_id : (currentLang === 'ne' ? opt.t_ne : opt.t_my)));
+            div.onclick = () => selectOption(opt.cat);
+            optionsArea.appendChild(div);
+        });
+    }
+
+    function selectOption(category) {
+        scores[category]++;
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+            loadQuestion();
+        } else {
+            endTest();
+        }
+    }
+
+    function endTest() {
+        document.getElementById('test-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        let highestCategory = 'leader';
+        let maxScore = -1;
+        for (let cat in scores) {
+            if (scores[cat] > maxScore) { maxScore = scores[cat]; highestCategory = cat; }
+        }
+
+        const t = translations[currentLang];
+        document.getElementById('job-type-display').innerText = t.types[highestCategory];
+        
+        const report = adminReports[highestCategory];
+        document.getElementById('analysis-strength').innerText = report.strength;
+        document.getElementById('analysis-weakness').innerText = report.weakness;
+        document.getElementById('analysis-learning').innerText = report.learning;
+    }
+
+    changeLanguage();
+</script>
+</body>
+</html>
